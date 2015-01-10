@@ -17,6 +17,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\AlbumViewData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IOHelper\StrageAccessHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PhotoUtil\Definitions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\Logger.cs" />
   </ItemGroup>
 </Project>

@@ -49,19 +49,13 @@ namespace NtPhotoInfoEditor
             // handling the hardware Back button by registering for the
             // Windows.Phone.UI.Input.HardwareButtons.BackPressed event.
             // If you are using the NavigationHelper provided by some templates,
-            // this event is handled for you.
+            // this event is handled for you.munimuni
 
-            AlbumData = await StorageAccessHelper.ReadAlbums(Albums);
+            AlbumData = await StorageAccessHelper.CreateContentListFromFolder(KnownFolders.PicturesLibrary);
             AlbumList.ItemsSource = AlbumData;
         }
 
-        List<StorageFolder> Albums = new List<StorageFolder>(){
-            KnownFolders.CameraRoll,
-            KnownFolders.PicturesLibrary,
-            KnownFolders.SavedPictures,
-        };
-
-        List<AlbumViewData> AlbumData;
+        List<ContentViewData> AlbumData;
     }
 
 }

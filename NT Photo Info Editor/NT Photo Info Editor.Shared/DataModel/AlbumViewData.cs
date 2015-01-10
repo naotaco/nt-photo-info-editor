@@ -5,21 +5,52 @@ using Windows.UI.Xaml.Media.Imaging;
 
 namespace NtPhotoInfoEditor.DataModel
 {
-    public class AlbumViewData
+    public class ContentViewData
     {
         public BitmapImage Image { get; set; }
         public string Name { get; set; }
+        public ContentType Type { get; set; }
 
         public int NumberOfPhotos { get; set; }
-        public string NumberOfPhotosString
+        public DateTime Created { get; set; }
+        public string SubText1
         {
-            get { return NumberOfPhotos.ToString() + " photos."; }
+            get
+            {
+                switch (Type)
+                {
+                    case ContentType.Folder:
+                        if (NumberOfPhotos > 0) { return NumberOfPhotos.ToString() + " photos."; }
+                        else { return "No photo."; }
+                    case ContentType.Other:
+                        return Created.ToString();
+                }
+                return "";
+            }
         }
 
         public int NumberOfFolders { get; set; }
-        public string NumberOfFoldersString
+        public string SubText2
         {
-            get { return NumberOfFolders.ToString() + " folders."; }
+            get
+            {
+                switch (Type)
+                {
+                    case ContentType.Folder:
+                        if (NumberOfFolders > 0) { return NumberOfFolders.ToString() + " folders."; }
+                        else { return ""; }
+                    case ContentType.Other:
+                        return "";
+                }
+                return "";
+            }
         }
+    }
+
+    public enum ContentType
+    {
+        Folder,
+        Jpeg,
+        Other,
     }
 }

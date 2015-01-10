@@ -26,9 +26,9 @@
                                 </Grid.ColumnDefinitions>
                                 <Image Source="{Binding Image}" Grid.RowSpan="3" Margin="4,0"/>
                                 <TextBlock x:Name="AlbumName" Text="{Binding Name}" Grid.Column="1" Grid.Row="0" FontSize="22" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding NumberOfPhotosString}" Grid.Column="1" Grid.Row="1" FontSize="18" VerticalAlignment="Center"
+                                <TextBlock Text="{Binding SubText1}" Grid.Column="1" Grid.Row="1" FontSize="18" VerticalAlignment="Center"
                                            Margin="4,2" Style="{ThemeResource ListViewItemSubheaderTextBlockStyle}"/>
-                                <TextBlock Text="{Binding NumberOfFoldersString}" Grid.Column="1" Grid.Row="2" FontSize="18" VerticalAlignment="Center"
+                                <TextBlock Text="{Binding SubText2}" Grid.Column="1" Grid.Row="2" FontSize="18" VerticalAlignment="Center"
                                            Margin="4,2" Style="{ThemeResource ListViewItemSubheaderTextBlockStyle}"/>
                             </Grid>                            
                         </DataTemplate>
