@@ -21,7 +21,7 @@ namespace NtPhotoInfoEditor.DataModel
                 {
                     case ContentType.Folder:
                         if (NumberOfPhotos > 0) { return NumberOfPhotos.ToString() + " photos."; }
-                        else { return "No photo."; }
+                        else { return "No JPEG file."; }
                     case ContentType.Other:
                         return Created.ToString();
                 }
