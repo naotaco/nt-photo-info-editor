@@ -1,21 +1,28 @@
-﻿using System;
+﻿using NtPhotoInfoEditor.DataModel;
+using NtPhotoInfoEditor.IOHelper;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
+using Windows.Storage.FileProperties;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
-namespace NT_Photo_Info_Editor
+namespace NtPhotoInfoEditor
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
@@ -34,7 +41,7 @@ namespace NT_Photo_Info_Editor
         /// </summary>
         /// <param name="e">Event data that describes how this page was reached.
         /// This parameter is typically used to configure the page.</param>
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             // TODO: Prepare page for display here.
 
@@ -43,6 +50,18 @@ namespace NT_Photo_Info_Editor
             // Windows.Phone.UI.Input.HardwareButtons.BackPressed event.
             // If you are using the NavigationHelper provided by some templates,
             // this event is handled for you.
+
+            AlbumData = await StorageAccessHelper.ReadAlbums(Albums);
+            AlbumList.ItemsSource = AlbumData;
         }
+
+        List<StorageFolder> Albums = new List<StorageFolder>(){
+            KnownFolders.CameraRoll,
+            KnownFolders.PicturesLibrary,
+            KnownFolders.SavedPictures,
+        };
+
+        List<AlbumViewData> AlbumData;
     }
+
 }

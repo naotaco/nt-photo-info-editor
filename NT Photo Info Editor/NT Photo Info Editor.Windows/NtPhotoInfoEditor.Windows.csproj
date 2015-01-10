@@ -115,7 +115,7 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="NT Photo Info Editor.Windows_TemporaryKey.pfx" />
+    <None Include="NtPhotoInfoEditor.Windows_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Logo.scale-100.png" />
