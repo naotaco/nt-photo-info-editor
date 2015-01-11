@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace NtPhotoInfoEditor.DataModel
 {
     public class ContentViewData
     {
+        public StorageFolder Self { get; set; }
+
         public BitmapImage Image { get; set; }
         public string Name { get; set; }
         public ContentType Type { get; set; }

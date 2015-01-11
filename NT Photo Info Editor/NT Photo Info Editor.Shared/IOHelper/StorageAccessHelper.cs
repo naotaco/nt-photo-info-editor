@@ -1,10 +1,10 @@
-﻿using NtPhotoInfoEditor.DataModel;
+﻿using NT_Photo_Info_Editor.DataModel;
+using NtPhotoInfoEditor.DataModel;
 using NtPhotoInfoEditor.PhotoUtil;
 using NtPhotoInfoEditor.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
@@ -14,25 +14,47 @@ namespace NtPhotoInfoEditor.IOHelper
 {
     public static class StorageAccessHelper
     {
-        public static async Task<List<ContentViewData>> CreateContentListFromFolder(StorageFolder ParentFolder)
+
+        public static async Task<FolderInfo> ReadAllFolders(StorageFolder ParentFolder)
         {
-            var data = new List<ContentViewData>();
-            var Children = await ParentFolder.GetFoldersAsync();
-            foreach (var folder in Children)
+            var folder = new FolderInfo();
+            folder.Self = ParentFolder;
+            folder.Contents = new List<ContentViewData>();
+            folder.Children = new List<FolderInfo>();
+            var folders = new List<StorageFolder>(await ParentFolder.GetFoldersAsync());
+            foreach (var f in folders)
             {
-                data.Add(await ReadFolder(folder));
+                folder.Contents.Add(await ReadFolderViewData(f));
+                folder.Children.Add(await ReadAllFolders(f));
             }
-            return data;
+            return folder;
         }
 
-        static async Task<ContentViewData> ReadFolder(StorageFolder folder)
+
+        public static async Task<FolderInfo> ReadAllContents(StorageFolder ParentFolder)
+        {
+            var folder = await ReadAllFolders(ParentFolder);
+
+            var items = await ParentFolder.GetFilesAsync();
+            foreach (var item in items)
+            {
+                if (Definitions.PhotoFileExtensions.Contains(item.FileType))
+                {
+                    // add contents if supported photo file type
+                    folder.Contents.Add(await ReadPhotoViewData(item));
+                }
+            }
+            return folder;
+        }
+
+        static async Task<ContentViewData> ReadFolderViewData(StorageFolder folder)
         {
             var data = new List<ContentViewData>();
             var property = await folder.GetBasicPropertiesAsync();
             var items = await folder.GetItemsAsync();
             var folders = await folder.GetFoldersAsync();
 
-            var viewData = new ContentViewData() { Name = folder.DisplayName, NumberOfFolders = folders.Count, NumberOfPhotos = await CountPhotoFile(folder), Type = ContentType.Folder };
+            var viewData = new ContentViewData() { Name = folder.DisplayName, NumberOfFolders = folders.Count, NumberOfPhotos = await CountPhotoFile(folder), Type = ContentType.Folder, Self = folder };
 
             if (items.Count > 0)
             {
@@ -45,7 +67,7 @@ namespace NtPhotoInfoEditor.IOHelper
             return viewData;
         }
 
-        static async Task<ContentViewData> ReadFile(StorageFile file)
+        static async Task<ContentViewData> ReadPhotoViewData(StorageFile file)
         {
             var viewData = new ContentViewData() { Name = file.Name, Type = ContentType.Jpeg, Created = file.DateCreated.DateTime };
             try
@@ -77,7 +99,7 @@ namespace NtPhotoInfoEditor.IOHelper
         {
             IReadOnlyList<StorageFile> items = new List<StorageFile>();
             int itemCount = 0;
-                
+
             try
             {
                 items = await folder.GetFilesAsync();
