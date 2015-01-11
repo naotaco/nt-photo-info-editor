@@ -1,4 +1,6 @@
-﻿using NT_Photo_Info_Editor.DataModel;
+﻿using NT_Photo_Info_Editor.Common;
+using NT_Photo_Info_Editor.DataModel;
+using NT_Photo_Info_Editor.Pages;
 using NtPhotoInfoEditor.DataModel;
 using NtPhotoInfoEditor.IOHelper;
 using NtPhotoInfoEditor.Utils;
@@ -26,9 +28,25 @@ namespace NtPhotoInfoEditor
         public MainPage()
         {
             this.InitializeComponent();
-
+            this.navigationHelper = new NavigationHelper(this);
+            this.navigationHelper.LoadState += navigationHelper_LoadState;
+            this.navigationHelper.SaveState += navigationHelper_SaveState;
             this.NavigationCacheMode = NavigationCacheMode.Required;
         }
+
+        private void navigationHelper_SaveState(object sender, SaveStateEventArgs e)
+        {
+        }
+
+        private void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
+        {
+        }
+
+        public NavigationHelper NavigationHelper
+        {
+            get { return this.navigationHelper; }
+        }
+        private NavigationHelper navigationHelper;
 
         readonly StorageFolder RootFolder = KnownFolders.PicturesLibrary;
         FolderInfo RootFolderInfo;
@@ -51,6 +69,7 @@ namespace NtPhotoInfoEditor
 
             Init();
 
+            navigationHelper.OnNavigatedTo(e);
             ChangeProgressText("Reading files...");
             RootFolderInfo = await StorageAccessHelper.ReadAllContents(RootFolder);
             var FirstPivotItem = CreateFolderPivotItem();
@@ -116,7 +135,7 @@ namespace NtPhotoInfoEditor
 
         private void OpenPhoto()
         {
-            throw new NotImplementedException();
+            Frame.Navigate(typeof(PhotoInfoPage));
         }
 
 
