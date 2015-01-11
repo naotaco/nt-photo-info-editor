@@ -10,7 +10,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
-namespace NT_Photo_Info_Editor.Common
+namespace NtPhotoInfoEditor.Common
 {
     /// <summary>
     /// NavigationHelper aids in navigation between pages.  It provides commands used to 

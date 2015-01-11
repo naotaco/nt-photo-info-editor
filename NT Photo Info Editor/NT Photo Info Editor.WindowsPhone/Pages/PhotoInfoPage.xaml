@@ -1,14 +1,37 @@
 ﻿<Page
-    x:Class="NT_Photo_Info_Editor.Pages.PhotoInfoPage"
+    x:Class="NtPhotoInfoEditor.Pages.PhotoInfoPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:NT_Photo_Info_Editor.Pages"
+    xmlns:local="using:NtPhotoInfoEditor.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    
+    <Page.Resources>
+        <DataTemplate x:Key="VerticalItemTemplate">
+            <Grid Margin="-7,-6,0,-6" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Transparent" Opacity="0.7" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="4*"/>
+                </Grid.ColumnDefinitions>
+                <Border Margin="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="{ThemeResource AppBarItemPointerOverBackgroundThemeBrush}" >
+                    <TextBlock Text="{Binding Name}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="12,1,0,1" TextWrapping="Wrap" Width="200"
+                               FontSize="18" Foreground="{ThemeResource ApplicationForegroundThemeBrush}" />
+                </Border>
+                <ListBox Grid.Column="1" x:Name="Values" Margin="12,0,0,0" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" ItemsSource="{Binding ValuesList}"  
+                         IsHitTestVisible="False" ItemTemplate="{StaticResource DetailInfoTemplate}" Background="Transparent" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
 
     <Grid>
-
+        <ScrollViewer>
+            <StackPanel>
+                <Image x:Name="Image" Height="200" Margin="16"/>
+                <ListBox x:Name="DetailInfoList" HorizontalAlignment="Stretch" ItemsSource="{Binding}" 
+                         ItemTemplate="{StaticResource VerticalItemTemplate}" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  />
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

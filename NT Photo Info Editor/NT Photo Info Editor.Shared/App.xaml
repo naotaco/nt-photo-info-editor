@@ -24,6 +24,11 @@
                                            Margin="4,2" Style="{ThemeResource ListViewItemSubheaderTextBlockStyle}"/>
             </Grid>
         </DataTemplate>
+
+        <DataTemplate x:Key="DetailInfoTemplate">
+            <TextBlock Grid.Row="1" Text="{Binding}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,-3" TextWrapping="Wrap" FontSize="16" 
+                       Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}"/>
+        </DataTemplate>
     </Application.Resources>
 
 </Application>

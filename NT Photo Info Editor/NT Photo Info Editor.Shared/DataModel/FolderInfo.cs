@@ -7,7 +7,7 @@ using System.Text;
 using Windows.Storage;
 using Windows.UI.Core;
 
-namespace NT_Photo_Info_Editor.DataModel
+namespace NtPhotoInfoEditor.DataModel
 {
     public class FolderInfo
     {

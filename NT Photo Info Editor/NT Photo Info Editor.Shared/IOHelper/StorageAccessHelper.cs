@@ -1,5 +1,4 @@
-﻿using NT_Photo_Info_Editor.DataModel;
-using NtPhotoInfoEditor.DataModel;
+﻿using NtPhotoInfoEditor.DataModel;
 using NtPhotoInfoEditor.PhotoUtil;
 using NtPhotoInfoEditor.Utils;
 using System;
@@ -54,7 +53,7 @@ namespace NtPhotoInfoEditor.IOHelper
             var items = await folder.GetItemsAsync();
             var folders = await folder.GetFoldersAsync();
 
-            var viewData = new ContentViewData() { Name = folder.DisplayName, NumberOfFolders = folders.Count, NumberOfPhotos = await CountPhotoFile(folder), Type = ContentType.Folder, Self = folder };
+            var viewData = new ContentViewData() { Name = folder.DisplayName, NumberOfFolders = folders.Count, NumberOfPhotos = await CountPhotoFile(folder), Type = ContentType.Folder, Folder = folder };
 
             if (items.Count > 0)
             {
@@ -69,7 +68,7 @@ namespace NtPhotoInfoEditor.IOHelper
 
         static async Task<ContentViewData> ReadPhotoViewData(StorageFile file)
         {
-            var viewData = new ContentViewData() { Name = file.Name, Type = ContentType.Jpeg, Created = file.DateCreated.DateTime };
+            var viewData = new ContentViewData() { Name = file.Name, Type = ContentType.Jpeg, Created = file.DateCreated.DateTime, File = file };
             try
             {
                 viewData.Image = await ReadAsThumbnail(file);

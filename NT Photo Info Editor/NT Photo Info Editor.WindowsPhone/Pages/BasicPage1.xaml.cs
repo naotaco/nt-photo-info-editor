@@ -1,4 +1,4 @@
-﻿using NT_Photo_Info_Editor.Common;
+﻿using NtPhotoInfoEditor.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +18,7 @@ using Windows.UI.Xaml.Navigation;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkID=390556
 
-namespace NT_Photo_Info_Editor.Pages
+namespace NtPhotoInfoEditor.Pages
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.

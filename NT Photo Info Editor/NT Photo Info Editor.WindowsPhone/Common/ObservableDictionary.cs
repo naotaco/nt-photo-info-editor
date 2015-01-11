@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation.Collections;
 
-namespace NT_Photo_Info_Editor.Common
+namespace NtPhotoInfoEditor.Common
 {
     /// <summary>
     /// Implementation of IObservableMap that supports reentrancy for use as a default view

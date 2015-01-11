@@ -1,6 +1,5 @@
-﻿using NT_Photo_Info_Editor.Common;
-using NT_Photo_Info_Editor.DataModel;
-using NT_Photo_Info_Editor.Pages;
+﻿using NtPhotoInfoEditor.Common;
+using NtPhotoInfoEditor.Pages;
 using NtPhotoInfoEditor.DataModel;
 using NtPhotoInfoEditor.IOHelper;
 using NtPhotoInfoEditor.Utils;
@@ -109,10 +108,10 @@ namespace NtPhotoInfoEditor
             switch (selectedContent.Type)
             {
                 case ContentType.Folder:
-                    await OpenFolder(selectedContent.Self, selectedPivotIndex);
+                    await OpenFolder(selectedContent.Folder, selectedPivotIndex);
                     break;
                 case ContentType.Jpeg:
-                    OpenPhoto();
+                    OpenPhoto(selectedContent.File.Path);
                     break;
             }
             HideProgress();
@@ -133,9 +132,9 @@ namespace NtPhotoInfoEditor
 
         }
 
-        private void OpenPhoto()
+        private void OpenPhoto(string path)
         {
-            Frame.Navigate(typeof(PhotoInfoPage));
+            Frame.Navigate(typeof(PhotoInfoPage), path);
         }
 
 
