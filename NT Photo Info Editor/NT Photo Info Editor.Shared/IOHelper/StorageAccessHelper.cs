@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
+using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace NtPhotoInfoEditor.IOHelper
@@ -14,33 +15,45 @@ namespace NtPhotoInfoEditor.IOHelper
     public static class StorageAccessHelper
     {
 
-        public static async Task<FolderInfo> ReadAllFolders(StorageFolder ParentFolder)
+        public static async Task<FolderInfo> ReadAllFoldersAsync(StorageFolder ParentFolder)
         {
             var folder = new FolderInfo();
             folder.Self = ParentFolder;
             folder.Contents = new List<ContentViewData>();
-            folder.Children = new List<FolderInfo>();
             var folders = new List<StorageFolder>(await ParentFolder.GetFoldersAsync());
             foreach (var f in folders)
             {
                 folder.Contents.Add(await ReadFolderViewData(f));
-                folder.Children.Add(await ReadAllFolders(f));
             }
             return folder;
         }
 
-
-        public static async Task<FolderInfo> ReadAllContents(StorageFolder ParentFolder)
-        {
-            var folder = await ReadAllFolders(ParentFolder);
-
+        public static async Task<FolderInfo> ReadAllContentsAsync(StorageFolder ParentFolder)
+        {        
             var items = await ParentFolder.GetFilesAsync();
+            var folder = await ReadAllFoldersAsync(ParentFolder).ConfigureAwait(false);
+
             foreach (var item in items)
             {
                 if (Definitions.PhotoFileExtensions.Contains(item.FileType))
                 {
                     // add contents if supported photo file type
-                    folder.Contents.Add(await ReadPhotoViewData(item));
+                    var viewData = new ContentViewData() { Name = item.Name, Type = ContentType.Jpeg, File = item, Created = new DateTime(0) };
+                    folder.Contents.Add(viewData);
+
+                    SequentialPhotoLoader.INSTANCE.Enqueue(new PhotoLoadTask()
+                    {
+                        Path = item.Path,
+                        Loaded = async (file) =>
+                            {
+                                await SystemUtil.GetCurrentDispatcher().RunAsync(CoreDispatcherPriority.Normal, async () =>
+                                {
+                                    viewData.Created = file.DateCreated.DateTime;
+                                    viewData.Image = await ReadThumbnailAsync(file);
+                                    Logger.Log("Image set: " + file.Name);
+                                });
+                            }
+                    });
                 }
             }
             return folder;
@@ -59,26 +72,14 @@ namespace NtPhotoInfoEditor.IOHelper
             {
                 try
                 {
-                    viewData.Image = await ReadAsThumbnail(await folder.GetFileAsync(items[0].Name));
+                    viewData.Image = await ReadThumbnailAsync(await folder.GetFileAsync(items[0].Name));
                 }
                 catch (Exception e) { Logger.Log(e.StackTrace); }
             }
             return viewData;
         }
 
-        static async Task<ContentViewData> ReadPhotoViewData(StorageFile file)
-        {
-            var viewData = new ContentViewData() { Name = file.Name, Type = ContentType.Jpeg, Created = file.DateCreated.DateTime, File = file };
-            try
-            {
-                viewData.Image = await ReadAsThumbnail(file);
-            }
-            catch (IOException ex) { Logger.Log(ex.StackTrace); }
-            catch (Exception ex) { Logger.Log(ex.StackTrace); }
-            return viewData;
-        }
-
-        static async Task<BitmapImage> ReadAsThumbnail(StorageFile file)
+        static async Task<BitmapImage> ReadThumbnailAsync(StorageFile file)
         {
             Logger.Log("Getting thumbnail: " + file.Name);
             var thumbnail = new BitmapImage();
@@ -90,7 +91,8 @@ namespace NtPhotoInfoEditor.IOHelper
                     thumb.Dispose();
                 }
             }
-            catch (IOException e) { Logger.Log(e.StackTrace); }
+            catch (Exception e) { Logger.Log(e.StackTrace); }
+            Logger.Log("Return thumbnail: " + file.Name);
             return thumbnail;
         }
 

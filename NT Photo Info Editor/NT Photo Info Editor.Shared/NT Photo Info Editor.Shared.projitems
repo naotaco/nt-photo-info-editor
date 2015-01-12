@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\AlbumViewData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\FolderInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataModel\PhotoPlaybackData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IOHelper\SequentialPhotoLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IOHelper\StorageAccessHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PhotoUtil\Definitions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Resource\LocalizedStrings.cs" />

@@ -70,11 +70,15 @@ namespace NtPhotoInfoEditor
 
             navigationHelper.OnNavigatedTo(e);
             ChangeProgressText("Reading files...");
-            RootFolderInfo = await StorageAccessHelper.ReadAllContents(RootFolder);
-            var FirstPivotItem = CreateFolderPivotItem();
-            (FirstPivotItem.Content as ListView).ItemsSource = RootFolderInfo.Contents;
-            PivotRoot.Items.Add(FirstPivotItem);
-            HideProgress();
+            RootFolderInfo = await StorageAccessHelper.ReadAllContentsAsync(RootFolder).ConfigureAwait(false);
+
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                var FirstPivotItem = CreateFolderPivotItem();
+                (FirstPivotItem.Content as ListView).ItemsSource = RootFolderInfo.Contents;
+                PivotRoot.Items.Add(FirstPivotItem);
+                HideProgress();
+            });
         }
 
         void Init()
@@ -125,10 +129,11 @@ namespace NtPhotoInfoEditor
             }
 
             var pItem = CreateFolderPivotItem();
-            var fInfo = await StorageAccessHelper.ReadAllContents(storageFolder);
-            (pItem.Content as ListView).ItemsSource = fInfo.Contents;
             PivotRoot.Items.Add(pItem);
             PivotRoot.SelectedIndex = currentLevel + 1;
+
+            var fInfo = await StorageAccessHelper.ReadAllContentsAsync(storageFolder);
+            (pItem.Content as ListView).ItemsSource = fInfo.Contents;
 
         }
 
