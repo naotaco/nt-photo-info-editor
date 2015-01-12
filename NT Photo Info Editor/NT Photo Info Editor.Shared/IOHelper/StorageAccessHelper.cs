@@ -29,8 +29,9 @@ namespace NtPhotoInfoEditor.IOHelper
         }
 
         public static async Task<FolderInfo> ReadAllContentsAsync(StorageFolder ParentFolder)
-        {        
-            var items = await ParentFolder.GetFilesAsync();
+        {
+            var items = new List<StorageFile>(await ParentFolder.GetFilesAsync());
+            items.Reverse();
             var folder = await ReadAllFoldersAsync(ParentFolder).ConfigureAwait(false);
 
             foreach (var item in items)

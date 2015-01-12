@@ -50,6 +50,7 @@ namespace NtPhotoInfoEditor
         readonly StorageFolder RootFolder = KnownFolders.PicturesLibrary;
         FolderInfo RootFolderInfo;
         private StatusBar statusBar = StatusBar.GetForCurrentView();
+        private int LastSelectedPivotIndex = 0;
 
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.
@@ -66,28 +67,48 @@ namespace NtPhotoInfoEditor
             // If you are using the NavigationHelper provided by some templates,
             // this event is handled for you.munimuni
 
-            Init();
+            HardwareButtons.BackPressed += HardwareButtons_BackPressed;
+
+            LastSelectedPivotIndex = PivotRoot.SelectedIndex;
 
             navigationHelper.OnNavigatedTo(e);
             ChangeProgressText("Reading files...");
-            RootFolderInfo = await StorageAccessHelper.ReadAllContentsAsync(RootFolder).ConfigureAwait(false);
+
+            if (PivotRoot.SelectedIndex == 0)
+            {
+                RootFolderInfo = await StorageAccessHelper.ReadAllContentsAsync(RootFolder).ConfigureAwait(false);
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                {
+                    var FirstPivotItem = CreateFolderPivotItem();
+                    (FirstPivotItem.Content as ListView).ItemsSource = RootFolderInfo.Contents;
+                    PivotRoot.Items.Add(FirstPivotItem);
+                    HideProgress();
+                });
+            }
+            else
+            {
+
+                // reload files in current folder
+                foreach (var viewData in (((((PivotRoot.Items[PivotRoot.SelectedIndex - 1]) as PivotItem).Content) as ListView).ItemsSource) as List<ContentViewData>)
+                {
+                    if (viewData.IsSelected) { await OpenFolder(viewData.Folder, PivotRoot.SelectedIndex); }
+                }
+            }
 
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                var FirstPivotItem = CreateFolderPivotItem();
-                (FirstPivotItem.Content as ListView).ItemsSource = RootFolderInfo.Contents;
-                PivotRoot.Items.Add(FirstPivotItem);
                 HideProgress();
             });
         }
 
-        void Init()
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            HardwareButtons.BackPressed += HardwareButtons_BackPressed;
+            HardwareButtons.BackPressed -= HardwareButtons_BackPressed;
         }
 
         private void HardwareButtons_BackPressed(object sender, BackPressedEventArgs e)
         {
+
             if (PivotRoot.SelectedIndex == 0)
             {
                 return;
@@ -97,16 +118,56 @@ namespace NtPhotoInfoEditor
             e.Handled = true;
         }
 
+        private void PivotRoot_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedIndex = (sender as Pivot).SelectedIndex;
+            Logger.Log("Pivot moved: " + LastSelectedPivotIndex + " -> " + selectedIndex);
+
+            SequentialPhotoLoader.INSTANCE.ClearQueue();
+
+
+            if (selectedIndex - LastSelectedPivotIndex == 1)
+            {
+                // going right
+            }
+            else if (selectedIndex - LastSelectedPivotIndex == -1)
+            {
+                // going left
+            }
+
+
+            LastSelectedPivotIndex = selectedIndex;
+        }
+
         async void AlbumList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            var selectedItemIndex = (sender as ListView).SelectedIndex;
+            if (selectedItemIndex == -1) { return; }
+            else { (sender as ListView).SelectedIndex = -1; }
+
             ChangeProgressText("Reading files...");
 
             var selectedPivotIndex = (((sender as ListView).Parent as PivotItem).Parent as Pivot).SelectedIndex;
-            var selectedItemIndex = (sender as ListView).SelectedIndex;
+            
             Logger.Log("pivot: " + selectedPivotIndex + " item: " + selectedItemIndex);
 
             if (selectedItemIndex >= (((sender as ListView).ItemsSource) as List<ContentViewData>).Count) { return; }
-            var selectedContent = (((sender as ListView).ItemsSource) as List<ContentViewData>).ElementAt(selectedItemIndex);
+
+            ContentViewData selectedContent = null;
+            int i = 0;
+            foreach (var viewData in ((sender as ListView).ItemsSource) as List<ContentViewData>)
+            {
+                if (i == selectedItemIndex)
+                {
+                    viewData.IsSelected = true;
+                    selectedContent = viewData;
+                }
+                else { viewData.IsSelected = false; }
+                i++;
+            }
+
+            if (selectedContent == null) { return; }
+
             Logger.Log("selected content: " + selectedContent.Name);
 
             switch (selectedContent.Type)
@@ -139,10 +200,10 @@ namespace NtPhotoInfoEditor
 
         private void OpenPhoto(string path)
         {
+            SequentialPhotoLoader.INSTANCE.ClearQueue();
             Frame.Navigate(typeof(PhotoInfoPage), path);
         }
-
-
+        
         PivotItem CreateFolderPivotItem()
         {
             var item = new PivotItem();
@@ -154,8 +215,6 @@ namespace NtPhotoInfoEditor
             item.Content = list;
             return item;
         }
-
-
 
         private async void HideProgress()
         {
@@ -174,6 +233,8 @@ namespace NtPhotoInfoEditor
                 await statusBar.ProgressIndicator.ShowAsync();
             });
         }
+
+
     }
 
 }

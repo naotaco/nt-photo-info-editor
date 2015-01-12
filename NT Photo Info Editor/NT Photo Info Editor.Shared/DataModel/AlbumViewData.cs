@@ -13,6 +13,8 @@ namespace NtPhotoInfoEditor.DataModel
     {
         public ContentType Type { get; set; }
 
+        public bool IsSelected { get; set; }
+
         StorageFolder _Folder;
         public StorageFolder Folder
         {

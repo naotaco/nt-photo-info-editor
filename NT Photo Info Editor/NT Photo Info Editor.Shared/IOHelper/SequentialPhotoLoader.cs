@@ -26,7 +26,7 @@ namespace NtPhotoInfoEditor.IOHelper
             }
         }
 
-        public void Clear()
+        public void ClearQueue()
         {
             Queue.Clear();
         }

@@ -8,6 +8,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Phone.UI.Input;
 using Windows.Storage;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
@@ -51,6 +52,8 @@ namespace NtPhotoInfoEditor.Pages
             Logger.Log("path: " + Path);
             File = await StorageFile.GetFileFromPathAsync(Path);
 
+            HardwareButtons.BackPressed += HardwareButtons_BackPressed;
+
             using (var fileStream = await File.OpenStreamForReadAsync())
             {
                 var image = new BitmapImage();
@@ -66,6 +69,17 @@ namespace NtPhotoInfoEditor.Pages
                 catch (Exception ex) { Logger.Log(ex.StackTrace); }
             }
             HideProgress();
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            HardwareButtons.BackPressed -= HardwareButtons_BackPressed;
+        }
+
+        private void HardwareButtons_BackPressed(object sender, BackPressedEventArgs e)
+        {
+            Frame.Navigate(typeof(MainPage));
+            e.Handled = true;
         }
 
         private async void HideProgress()
