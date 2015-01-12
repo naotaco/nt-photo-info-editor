@@ -87,11 +87,10 @@ namespace NtPhotoInfoEditor
             }
             else
             {
-
                 // reload files in current folder
                 foreach (var viewData in (((((PivotRoot.Items[PivotRoot.SelectedIndex - 1]) as PivotItem).Content) as ListView).ItemsSource) as List<ContentViewData>)
                 {
-                    if (viewData.IsSelected) { await OpenFolder(viewData.Folder, PivotRoot.SelectedIndex); }
+                    if (viewData.IsSelected) { await OpenFolder(viewData.Folder, PivotRoot.SelectedIndex - 1); }
                 }
             }
 
@@ -148,7 +147,7 @@ namespace NtPhotoInfoEditor
             ChangeProgressText("Reading files...");
 
             var selectedPivotIndex = (((sender as ListView).Parent as PivotItem).Parent as Pivot).SelectedIndex;
-            
+
             Logger.Log("pivot: " + selectedPivotIndex + " item: " + selectedItemIndex);
 
             if (selectedItemIndex >= (((sender as ListView).ItemsSource) as List<ContentViewData>).Count) { return; }
@@ -203,7 +202,7 @@ namespace NtPhotoInfoEditor
             SequentialPhotoLoader.INSTANCE.ClearQueue();
             Frame.Navigate(typeof(PhotoInfoPage), path);
         }
-        
+
         PivotItem CreateFolderPivotItem()
         {
             var item = new PivotItem();
