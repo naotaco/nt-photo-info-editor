@@ -27,11 +27,15 @@
 
     <Grid>
         <ScrollViewer>
-            <StackPanel>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
                 <Image x:Name="Image" Height="200" Margin="16"/>
-                <ListBox x:Name="DetailInfoList" HorizontalAlignment="Stretch" ItemsSource="{Binding}" 
+                <ListBox x:Name="DetailInfoList" HorizontalAlignment="Stretch" ItemsSource="{Binding}" Grid.Row="1"
                          ItemTemplate="{StaticResource VerticalItemTemplate}" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  />
-            </StackPanel>
+            </Grid>
         </ScrollViewer>
     </Grid>
 </Page>

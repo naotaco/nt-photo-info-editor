@@ -1,6 +1,5 @@
 ﻿
 using NtImageProcessor.MetaData.Structure;
-using NtPhotoInfoEditor.DataModel;
 using System.Collections.Generic;
 
 namespace NtPhotoInfoEditor.Utils

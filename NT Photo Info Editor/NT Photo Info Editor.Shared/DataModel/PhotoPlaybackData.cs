@@ -1,7 +1,6 @@
 ﻿
 using NtImageProcessor.MetaData.Structure;
 using NtPhotoInfoEditor.Utils;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
@@ -43,7 +42,7 @@ namespace NtPhotoInfoEditor.DataModel
             }
         }
 
-        Dictionary<string, uint> SupportedMetadataItems = new Dictionary<string, uint>()
+        Dictionary<string, uint> KnownMetadataItems = new Dictionary<string, uint>()
         {
             {"Fnumber", 0x829D},
             {"ExposureTime", 0x829A},
@@ -78,9 +77,9 @@ namespace NtPhotoInfoEditor.DataModel
             var converter = new MetaDataValueConverter();
             var type = converter.GetType().GetTypeInfo();
 
-            foreach (var name in SupportedMetadataItems.Keys)
+            foreach (var name in KnownMetadataItems.Keys)
             {
-                var key = SupportedMetadataItems[name];
+                var key = KnownMetadataItems[name];
                 var EntryName = MetaDataValueConverter.MetaDataEntryName(name);
                 var ValueName = "";
                 var entry = FindFirstEntry(metadata, key);
@@ -116,19 +115,48 @@ namespace NtPhotoInfoEditor.DataModel
                         ValueName = (string)method.Invoke(converter, new object[] { entry.SFractionValues });
                         break;
                     default:
-                        ValueName = (string)method.Invoke(converter, new object[] { GetStringValue(metadata, key) });
+                        ValueName = (string)method.Invoke(converter, new object[] { GetStringValue(entry) });
                         break;
                 }
 
                 EntryList.Add(CreateEntry(EntryName, ValueName, key));
             }
+
+            // unsupported values.
+            foreach (var key in metadata.PrimaryIfd.Entries.Keys)
+            {
+                if (!KnownMetadataItems.ContainsValue(key))
+                {
+                    Logger.Log(key.ToString("X4"));
+                    EntryList.Add(AsUnknownEntry(key, metadata.PrimaryIfd.Entries[key]));
+                }
+            }
+
+            foreach (var key in metadata.ExifIfd.Entries.Keys)
+            {
+                if (!KnownMetadataItems.ContainsValue(key))
+                {
+                    Logger.Log(key.ToString("X4"));
+                    EntryList.Add(AsUnknownEntry(key, metadata.ExifIfd.Entries[key]));
+                }
+            }
+        }
+
+        EntryViewData AsUnknownEntry(uint id, Entry entry)
+        {
+            return new EntryViewData()
+            {
+                Name = id.ToString("X4"),
+                ValuesList = new List<string>() { GetStringValue(entry) },
+                MetadataKey = id,
+            };
         }
 
         EntryViewData AsSpecialEntry(JpegMetaData metadata, string name)
         {
-            if (!SupportedMetadataItems.ContainsKey(name)) { return null; }
+            if (!KnownMetadataItems.ContainsKey(name)) { return null; }
 
-            var key = SupportedMetadataItems[name];
+            var key = KnownMetadataItems[name];
 
             switch (name)
             {
@@ -166,9 +194,8 @@ namespace NtPhotoInfoEditor.DataModel
             };
         }
 
-        string GetStringValue(JpegMetaData metadata, uint key)
+        string GetStringValue(Entry entry)
         {
-            var entry = FindFirstEntry(metadata, key);
             if (entry == null) { return "null"; }
             switch (entry.Type)
             {
