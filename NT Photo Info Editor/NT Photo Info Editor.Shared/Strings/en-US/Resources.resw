@@ -330,4 +330,7 @@
   <data name="WhiteBalance" xml:space="preserve">
     <value>White balance</value>
   </data>
+  <data name="WB_Auto" xml:space="preserve">
+    <value>Auto</value>
+  </data>
 </root>

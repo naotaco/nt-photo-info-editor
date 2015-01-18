@@ -7,29 +7,11 @@ namespace NtPhotoInfoEditor.Utils
 {
     public class MetaDataValueConverter
     {
-
-        private static Dictionary<uint, string> MetaDataNames = new Dictionary<uint, string>(){
-            {ExifKeys.FocalLength, SystemUtil.GetStringResource("MetaDataName_FocalLength")},
-            {ExifKeys.Fnumber, SystemUtil.GetStringResource("MetaDataName_Fnumber")},
-            {ExifKeys.ExposureTime, SystemUtil.GetStringResource("MetaDataName_ExposureTime")},
-            {ExifKeys.Iso, SystemUtil.GetStringResource("MetaDataName_Iso")},
-            {ExifKeys.CameraModel, SystemUtil.GetStringResource("MetaDataName_CameraModel")},
-            {ExifKeys.DateTime, SystemUtil.GetStringResource("MetaDataName_DateTime")},
-            {ExifKeys.ExposureProgram, SystemUtil.GetStringResource("MetaDataName_ExposureProgram")},
-            {ExifKeys.WhiteBalanceMode, SystemUtil.GetStringResource("WhiteBalance")},
-            {ExifKeys.LensModel, SystemUtil.GetStringResource("MetaDataName_LensModel")},
-            {ExifKeys.ExposureCompensation, SystemUtil.GetStringResource("MetaDataName_ExposureCompensation")},
-            {ExifKeys.Flash, SystemUtil.GetStringResource("MetaDataName_Flash")},
-            {ExifKeys.MeteringMode, SystemUtil.GetStringResource("MetaDataName_MeteringMode")},
-        };
-
-        public static string MetaDataEntryName(uint key)
+        public static string MetaDataEntryName(string key)
         {
-            if (MetaDataNames.ContainsKey(key))
-            {
-                return MetaDataNames[key];
-            }
-            return key.ToString("X4");
+            var name = SystemUtil.GetStringResource("MetaDataName_" + key);
+            if (name == "") { return key; }
+            return name;
         }
 
         private static Dictionary<uint, string> ExposureProgramNames = new Dictionary<uint, string>()
@@ -45,15 +27,6 @@ namespace NtPhotoInfoEditor.Utils
             {0x8, SystemUtil.GetStringResource("ExifExposureProgram_Landscape")},
             {0x9, SystemUtil.GetStringResource("ExifExposureProgram_Bulb")},
         };
-
-        public static string ExposuteProgramName(uint key)
-        {
-            if (ExposureProgramNames.ContainsKey(key))
-            {
-                return ExposureProgramNames[key];
-            }
-            return key.ToString("X2");
-        }
 
         private static Dictionary<uint, string> WhitebalanceNames = new Dictionary<uint, string>()
         {
@@ -81,15 +54,6 @@ namespace NtPhotoInfoEditor.Utils
             { 255, SystemUtil.GetStringResource("ExifWBValue_Other")},
         };
 
-        public static string WhitebalanceName(uint value)
-        {
-            if (WhitebalanceNames.ContainsKey(value))
-            {
-                return WhitebalanceNames[value];
-            }
-            return value.ToString();
-        }
-
         private static Dictionary<uint, string> MeteringModeNames = new Dictionary<uint, string>(){
             {0, SystemUtil.GetStringResource("Exif_MeteringMode_Unknown")},
             {1, SystemUtil.GetStringResource("Exif_MeteringMode_Average")},
@@ -101,18 +65,157 @@ namespace NtPhotoInfoEditor.Utils
             {255, SystemUtil.GetStringResource("Exif_MeteringMode_Other")},
         };
 
-        public static string MeteringModeName(uint value)
+        public static List<string> Geoinfo(IfdData GpsIfd)
         {
-            if (MeteringModeNames.ContainsKey(value))
+            var values = new List<string>();
+            // lat
+            if (GpsIfd.Entries.ContainsKey(0x1) && GpsIfd.Entries.ContainsKey(0x2) && GpsIfd.Entries[0x2].Count >= 3)
             {
-                return MeteringModeNames[value];
+                var entry = GpsIfd.Entries[0x2];
+                values.Add(GetStringValue(GpsIfd.Entries[0x1]) + " " + entry.DoubleValues[0] + "°" + entry.DoubleValues[1] + "'" + entry.DoubleValues[2] + "''");
+            }
+
+            if (GpsIfd.Entries.ContainsKey(0x3) && GpsIfd.Entries.ContainsKey(0x4) && GpsIfd.Entries[0x4].Count >= 3)
+            {
+                var entry = GpsIfd.Entries[0x4];
+                values.Add(GetStringValue(GpsIfd.Entries[0x3]) + " " + entry.DoubleValues[0] + "°" + entry.DoubleValues[1] + "'" + entry.DoubleValues[2] + "''");
+            }
+
+            if (GpsIfd.Entries.ContainsKey(0x12))
+            {
+                values.Add(GetStringValue(GpsIfd.Entries[0x12]));
+            }
+
+            if (GpsIfd.Entries.ContainsKey(0x1D))
+            {
+                values.Add(GetStringValue(GpsIfd.Entries[0x1D]));
+            }
+
+            return values;
+        }
+
+        public static string FnumberName(UnsignedFraction[] value)
+        {
+            return (value[0].Numerator / value[0].Denominator).ToString("F1");
+        }
+
+        public static string ExposureTimeName(UnsignedFraction[] value)
+        {
+            var numerator = value[0].Numerator;
+            var denominator = value[0].Denominator;
+
+            if (numerator == 1)
+            {
+                return numerator + "/" + denominator + SystemUtil.GetStringResource("Seconds");
+            }
+            else if (denominator == 1)
+            {
+                return numerator + SystemUtil.GetStringResource("Seconds");
+            }
+
+            // difficult cases,,
+            if (numerator > denominator)
+            {
+                // longer than 1 sec.
+                double val = numerator / denominator;
+                return val.ToString() + SystemUtil.GetStringResource("Seconds");
+            }
+
+            // reduction forcibly
+            int newDenominator = (int)((double)denominator / (double)numerator);
+            return "1/" + newDenominator + SystemUtil.GetStringResource("Seconds");
+        }
+
+        public static string IsoName(uint[] value)
+        {
+            return value[0].ToString();
+        }
+
+        public static string FocalLengthName(UnsignedFraction[] value)
+        {
+            return (value[0].Numerator / value[0].Denominator).ToString() + "mm";
+        }
+
+        public static string CameraModelName(string value)
+        {
+            return value;
+        }
+
+        public static string CameraMakerName(string value)
+        {
+            return value;
+        }
+
+        public static string ImageWidthName(uint[] value)
+        {
+            return value[0].ToString() + "px";
+        }
+
+        public static string ImageHeightName(uint[] value)
+        {
+            return value[0].ToString() + "px";
+        }
+
+        public static string DateTimeName(string value)
+        {
+            return value;
+        }
+
+        public static string ExposureProgramName(uint[] value)
+        {
+            var key = value[0];
+            if (ExposureProgramNames.ContainsKey(key))
+            {
+                return ExposureProgramNames[key];
+            }
+            return key.ToString("X2");
+        }
+
+        public static string WhiteBalanceModeName(uint[] value)
+        {
+            if (value[0] == 0x0)
+            {
+                return SystemUtil.GetStringResource("WB_Auto");
+            }
+            return "See Detail.";
+        }
+
+        public static string WhiteBalanceDetailTypeName(uint[] value)
+        {
+            if (WhitebalanceNames.ContainsKey(value[0]))
+            {
+                return WhitebalanceNames[value[0]];
+            }
+            return value.ToString();
+        }
+
+        public static string DocumentNameName(string value)
+        {
+            return value;
+        }
+
+        public static string ExposureCompensationName(SignedFraction[] v)
+        {
+            var value = v[0].Numerator / v[0].Denominator;
+            if (value > 0)
+            {
+                return "+" + value + "EV";
+            }
+            return value + "EV";
+        }
+
+        public string MeteringModeName(uint[] value)
+        {
+            if (MeteringModeNames.ContainsKey(value[0]))
+            {
+                return MeteringModeNames[value[0]];
             }
             return SystemUtil.GetStringResource("Exif_MeteringMode_Unknown");
         }
 
-        public static string FlashNames(uint value)
+        public static string FlashName(uint[] value)
         {
-            switch (value)
+            switch (value[0])
             {
                 case 0x0:
                     return SystemUtil.GetStringResource("Exif_Flash_NoFlash");
@@ -160,66 +263,9 @@ namespace NtPhotoInfoEditor.Utils
             }
         }
 
-        public static string EV(double value)
+        public static string LensModelName(string value)
         {
-            if (value > 0)
-            {
-                return "+" + value + "EV";
-            }
-            return value + "EV";
-        }
-
-        public static string ShutterSpeed(uint numerator, uint denominator)
-        {
-            if (numerator == 1)
-            {
-                return numerator + "/" + denominator + SystemUtil.GetStringResource("Seconds");
-            }
-            else if (denominator == 1)
-            {
-                return numerator + SystemUtil.GetStringResource("Seconds");
-            }
-
-            // difficult cases,,
-            if (numerator > denominator)
-            {
-                // longer than 1 sec.
-                double val = numerator / denominator;
-                return val.ToString() + SystemUtil.GetStringResource("Seconds");
-            }
-
-            // reduction forcibly
-            int newDenominator = (int)((double)denominator / (double)numerator);
-            return "1/" + newDenominator + SystemUtil.GetStringResource("Seconds");
-        }
-
-        public static List<string> Geoinfo(IfdData GpsIfd)
-        {
-            var values = new List<string>();
-            // lat
-            if (GpsIfd.Entries.ContainsKey(0x1) && GpsIfd.Entries.ContainsKey(0x2) && GpsIfd.Entries[0x2].Count >= 3)
-            {
-                var entry = GpsIfd.Entries[0x2];
-                values.Add(GetStringValue(GpsIfd.Entries[0x1]) + " " + entry.DoubleValues[0] + "°" + entry.DoubleValues[1] + "'" + entry.DoubleValues[2] + "''");
-            }
-
-            if (GpsIfd.Entries.ContainsKey(0x3) && GpsIfd.Entries.ContainsKey(0x4) && GpsIfd.Entries[0x4].Count >= 3)
-            {
-                var entry = GpsIfd.Entries[0x4];
-                values.Add(GetStringValue(GpsIfd.Entries[0x3]) + " " + entry.DoubleValues[0] + "°" + entry.DoubleValues[1] + "'" + entry.DoubleValues[2] + "''");
-            }
-
-            if (GpsIfd.Entries.ContainsKey(0x12))
-            {
-                values.Add(GetStringValue(GpsIfd.Entries[0x12]));
-            }
-
-            if (GpsIfd.Entries.ContainsKey(0x1D))
-            {
-                values.Add(GetStringValue(GpsIfd.Entries[0x1D]));
-            }
-
-            return values;
+            return value;
         }
 
         static string GetStringValue(Entry entry)
