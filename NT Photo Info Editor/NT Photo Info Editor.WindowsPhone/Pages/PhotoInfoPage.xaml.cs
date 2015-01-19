@@ -1,23 +1,14 @@
 ﻿using NtPhotoInfoEditor.DataModel;
 using NtPhotoInfoEditor.Utils;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Phone.UI.Input;
 using Windows.Storage;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 
@@ -40,6 +31,7 @@ namespace NtPhotoInfoEditor.Pages
         private StatusBar statusBar = StatusBar.GetForCurrentView();
         PhotoPlaybackData PhotoData = new PhotoPlaybackData();
 
+
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.
         /// </summary>
@@ -47,14 +39,22 @@ namespace NtPhotoInfoEditor.Pages
         /// This parameter is typically used to configure the page.</param>
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            ChangeProgressText("Loading file...");
+
             Path = (string)e.Parameter;
             Logger.Log("path: " + Path);
             File = await StorageFile.GetFileFromPathAsync(Path);
 
             HardwareButtons.BackPressed += HardwareButtons_BackPressed;
+            DetailInfoList.DataContext = PhotoData.EntryList;
 
-            using (var fileStream = await File.OpenStreamForReadAsync())
+            await LoadImage(File);
+        }
+
+        private async Task LoadImage(StorageFile file)
+        {
+            ChangeProgressText("Loading file...");
+
+            using (var fileStream = await file.OpenStreamForReadAsync().ConfigureAwait(false))
             {
                 var image = new BitmapImage();
                 image.SetSource(fileStream.AsRandomAccessStream());
@@ -63,12 +63,11 @@ namespace NtPhotoInfoEditor.Pages
                 fileStream.Seek(0, SeekOrigin.Begin);
                 try
                 {
-                    PhotoData.MetaData = NtImageProcessor.MetaData.JpegMetaDataParser.ParseImage(fileStream);
-                    DetailInfoList.DataContext = PhotoData.EntryList;
+                    PhotoData.MetaData = await NtImageProcessor.MetaData.JpegMetaDataParser.ParseImageAsync(fileStream);
+                    HideProgress();
                 }
                 catch (Exception ex) { Logger.Log(ex.StackTrace); }
             }
-            HideProgress();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -86,6 +85,7 @@ namespace NtPhotoInfoEditor.Pages
         {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
             {
+                Logger.Log("HideProgress.");
                 await statusBar.ProgressIndicator.HideAsync();
             });
         }
@@ -98,6 +98,14 @@ namespace NtPhotoInfoEditor.Pages
                 statusBar.ProgressIndicator.Text = text;
                 await statusBar.ProgressIndicator.ShowAsync();
             });
+        }
+
+        private void DetailInfoList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count != 1) { return; }
+
+            var selected = e.AddedItems.ElementAt(0) as EntryViewData;
+            Logger.Log("Selection changed: " + selected.MetadataKey + " " + selected.Name);
         }
 
     }

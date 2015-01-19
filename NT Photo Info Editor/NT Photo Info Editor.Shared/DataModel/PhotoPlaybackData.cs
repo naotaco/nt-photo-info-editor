@@ -3,11 +3,14 @@ using NtImageProcessor.MetaData.Structure;
 using NtPhotoInfoEditor.Utils;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Reflection;
+using Windows.UI.Core;
+using System;
 
 namespace NtPhotoInfoEditor.DataModel
 {
-    public class PhotoPlaybackData
+    public class PhotoPlaybackData : INotifyPropertyChanged
     {
         public PhotoPlaybackData() { }
         private ObservableCollection<EntryViewData> _EntryList = new ObservableCollection<EntryViewData>();
@@ -39,6 +42,8 @@ namespace NtPhotoInfoEditor.DataModel
                         ShowInvalidData();
                     }
                 }
+                NotifyChangedOnUI("MetaData");
+                NotifyChangedOnUI("EntryList");
             }
         }
 
@@ -127,7 +132,7 @@ namespace NtPhotoInfoEditor.DataModel
             {
                 if (!KnownMetadataItems.ContainsValue(key))
                 {
-                    Logger.Log(key.ToString("X4"));
+                    //Logger.Log(key.ToString("X4"));
                     EntryList.Add(AsUnknownEntry(key, metadata.PrimaryIfd.Entries[key]));
                 }
             }
@@ -136,7 +141,7 @@ namespace NtPhotoInfoEditor.DataModel
             {
                 if (!KnownMetadataItems.ContainsValue(key))
                 {
-                    Logger.Log(key.ToString("X4"));
+                    //Logger.Log(key.ToString("X4"));
                     EntryList.Add(AsUnknownEntry(key, metadata.ExifIfd.Entries[key]));
                 }
             }
@@ -175,7 +180,7 @@ namespace NtPhotoInfoEditor.DataModel
 
         EntryViewData CreateEntry(string name, string value, uint key)
         {
-            Logger.Log(name + " " + value + " " + key);
+            // Logger.Log(name + " " + value + " " + key);
             return new EntryViewData()
             {
                 Name = name,
@@ -233,6 +238,28 @@ namespace NtPhotoInfoEditor.DataModel
                 return metadata.GpsIfd.Entries[key];
             }
             return null;
+        }
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected async void NotifyChangedOnUI(string name, CoreDispatcherPriority priority = CoreDispatcherPriority.Normal)
+        {
+            var dispatcher = SystemUtil.GetCurrentDispatcher();
+            if (dispatcher == null) { return; }
+
+            await dispatcher.RunAsync(priority, () =>
+            {
+                NotifyChanged(name);
+            });
+        }
+
+        protected void NotifyChanged(string name)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
+            }
         }
     }
 

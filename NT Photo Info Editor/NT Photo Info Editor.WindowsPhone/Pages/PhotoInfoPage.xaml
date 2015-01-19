@@ -33,7 +33,8 @@
                     <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
                 <Image x:Name="Image" Height="200" Margin="16"/>
-                <ListBox x:Name="DetailInfoList" HorizontalAlignment="Stretch" ItemsSource="{Binding}" Grid.Row="1"
+                <ListBox x:Name="DetailInfoList" HorizontalAlignment="Stretch" ItemsSource="{Binding}" Grid.Row="1" 
+                         SelectionMode="Single" SelectionChanged="DetailInfoList_SelectionChanged"
                          ItemTemplate="{StaticResource VerticalItemTemplate}" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  />
             </Grid>
         </ScrollViewer>
